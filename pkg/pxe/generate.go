@@ -11,7 +11,7 @@ import (
 var ipxetmpl string
 
 type values struct {
-	URL string
+	URL    string
 	Serial string
 }
 

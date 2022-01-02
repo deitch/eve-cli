@@ -3,9 +3,9 @@
 package main
 
 import (
-        "github.com/lf-edge/eve-cli/cmd"
+	"github.com/lf-edge/eve-cli/cmd"
 )
 
 func main() {
-        cmd.Execute()
+	cmd.Execute()
 }

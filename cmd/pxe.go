@@ -67,7 +67,7 @@ var pxeCmd = &cobra.Command{
 		}
 		// figure out the base URL
 		if url == "" {
-			if version == "" || version == defaultVersion{
+			if version == "" || version == defaultVersion {
 				version, err = github.GetLatestVersion(org, repo)
 				if err != nil {
 					log.Fatal(err)
