@@ -11,8 +11,7 @@
 #   * eve_install_server=XXX (e.g. XXX=zedcloud.hummingbird.zededa.net)
 #   * eve_persist_disk=XXX (e.g. XXX=mmcblk0, you can set multiple values here with comma delimiter to use multiple disks).
 #
-# chain --autofree {{.URL}}.ipxe.efi.cfg
-set url {{.URL}}
+# chain --autofree {{.IpxeCfg}}
 set console console=ttyS0 console=ttyS1 console=ttyS2 console=ttyAMA0 console=ttyAMA1 console=tty0
 set eve_args eve_soft_serial={{.Serial}} eve_reboot_after_install
 set installer_args root=/initrd.image find_boot=netboot overlaytmpfs fastboot
@@ -22,9 +21,9 @@ iseq ${smbios/manufacturer} Huawei && set console console=ttyAMA0,115200n8 ||
 iseq ${smbios/manufacturer} Huawei && set platform_tweaks pcie_aspm=off pci=pcie_bus_perf crashkernel=auto ||
 iseq ${smbios/manufacturer} Supermicro && set console console=ttyS1,115200n8 ||
 
-kernel ${url}.kernel ${eve_args} ${installer_args} ${console} ${platform_tweaks} initrd=amd64.initrd.img initrd=amd64.installer.img initrd=amd64.initrd.bits initrd=amd64.rootfs.img
-initrd ${url}.initrd.img
-initrd ${url}.installer.img
-initrd ${url}.initrd.bits
-initrd ${url}.rootfs.img
+kernel {{.Kernel}} ${eve_args} ${installer_args} ${console} ${platform_tweaks} initrd=amd64.initrd.img initrd=amd64.installer.img initrd=amd64.initrd.bits initrd=amd64.rootfs.img
+initrd {{.Initrd}}
+initrd {{.Installer}}
+initrd {{.InitrdBits}}
+initrd {{.Rootfs}}
 boot
