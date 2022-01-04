@@ -25,6 +25,7 @@ const (
 
 var (
 	outpath, serial, generateSerial, url, version, arch string
+	explicitUrl                                         bool
 )
 
 var pxeCmd = &cobra.Command{
@@ -32,11 +33,15 @@ var pxeCmd = &cobra.Command{
 	Short: "generate iPXE boot script",
 	Long:  `Generate iPXE boot script. Can be configured to point to any download location, including local. Also can generate soft serial.`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if url != "" && ((arch != "" && cmd.Flags().Changed("arch")) || (version != "" && cmd.Flags().Changed("version"))) {
+		flags := cmd.Flags()
+		if url != "" && ((arch != "" && flags.Changed("arch")) || (version != "" && flags.Changed("version"))) {
 			return errors.New("cannot provide --arch or --version when --url is provided")
 		}
-		if serial != "" && generateSerial != "" && cmd.Flags().Changed("generate-serial") {
+		if serial != "" && generateSerial != "" && flags.Changed("generate-serial") {
 			return errors.New("cannot provide both --serial and --generate-serial")
+		}
+		if flags.Changed("url") {
+			explicitUrl = true
 		}
 		return nil
 	},
@@ -66,14 +71,14 @@ var pxeCmd = &cobra.Command{
 			}
 		}
 		// figure out the base URL
-		if url == "" {
+		if url == "" && !explicitUrl {
 			if version == "" || version == defaultVersion {
 				version, err = github.GetLatestVersion(org, repo)
 				if err != nil {
 					log.Fatal(err)
 				}
 			}
-			url = fmt.Sprintf("%s/%s/%s", defaultBaseURL, version, arch)
+			url = fmt.Sprintf("%s/%s/%s.", defaultBaseURL, version, arch)
 		}
 
 		// generate the iPXE script
@@ -92,7 +97,7 @@ func pxeInit() {
 	pxeCmd.Flags().StringVar(&outpath, "out", "", "path where to store the iPXE script, blank to stdout")
 	pxeCmd.Flags().StringVar(&serial, "serial", "", "provided serial to use")
 	pxeCmd.Flags().StringVar(&generateSerial, "generate-serial", "uuid", "serial type to generate, one of: ip, mac, uuid; must provide either --serial or --generate-serial")
-	pxeCmd.Flags().StringVar(&url, "url", "", fmt.Sprintf("base URL for assets, such as initrd, installer, rootfs. Defaults to latest release from %s for architecture %s", defaultBaseURL, defaultArch))
+	pxeCmd.Flags().StringVar(&url, "url", "", fmt.Sprintf("base URL for assets, such as initrd, installer, rootfs. Defaults to latest release from %s for architecture %s. To use local paths, set to 'path/to/assets/' or even just ''. Explicitly setting to '' means to use local; leaving it empty means to use the default.", defaultBaseURL, defaultArch))
 	pxeCmd.Flags().StringVar(&version, "version", defaultVersion, fmt.Sprintf("which version to take from the default base for assets on GitHub, when no URL is provided. '%s' means discovering the latest version. Conflicts with 'url'", defaultVersion))
 	pxeCmd.Flags().StringVar(&arch, "arch", defaultArch, "which architecture to take from the default base for assets on GitHub, when no URL is provided. Conflicts with 'url'")
 }
