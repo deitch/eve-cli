@@ -48,7 +48,10 @@ var pxeCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		// figure out where to write the output
-		var out io.Writer = os.Stdout
+		var (
+			out     io.Writer = os.Stdout
+			outname           = "stdout"
+		)
 		if outpath != "" {
 			outfile, err := os.OpenFile(outpath, os.O_CREATE|os.O_RDWR, 0644)
 			if err != nil {
@@ -56,6 +59,7 @@ var pxeCmd = &cobra.Command{
 			}
 			defer outfile.Close()
 			out = outfile
+			outname = outpath
 		}
 		// generate a serial, if required
 		if serial == "" {
@@ -90,6 +94,7 @@ var pxeCmd = &cobra.Command{
 		if _, err := out.Write(content); err != nil {
 			log.Fatal(err)
 		}
+		log.Printf("iPXE script written to %s with serial %s", outname, serial)
 	},
 }
 
